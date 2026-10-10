@@ -111,6 +111,10 @@ export function set_active_document_id(document_id: string | null) {
   active_document_id = document_id;
 }
 
+export function get_active_document_id() {
+  return active_document_id;
+}
+
 export function assert_target_document_active(
   target_document?: TargetDocumentSelector,
 ) {
@@ -318,7 +322,7 @@ function ensure_pages_api(ui: any, selector_name: string) {
   }
 }
 
-function get_page_id(page: any): string {
+export function get_page_id(page: any): string {
   if (typeof page?.getId === "function") {
     return String(page.getId());
   }

@@ -44,6 +44,20 @@ under `packages/drawio-mcp-plugin/src/tools/<tool>/{v29,v30,...}.ts` and
 register them in `drawio-compat/matrix.ts`. See
 `packages/drawio-mcp-plugin/src/drawio-compat/README.md`.
 
+## Universal Web-to-MCP Bridge (OpenClaw SDK)
+
+We recently migrated this project to use the generic OpenClaw SDK (`packages/openclaw-sdk`), bypassing the legacy WebSocket-based MCP server (`packages/drawio-mcp-server`) in favor of a universal HTTP push architecture.
+
+**Key Components:**
+1. **Generic AI Client (`mcp-ai-client.ts`)**: Spawns the generic server (`openclaw-mcp-server`), waits for Draw.io to push its capabilities, dynamically builds the Gemini prompt, and subscribes to live context updates.
+2. **Generic MCP Server (`packages/openclaw-mcp-server`)**: Listens on port 3100. It receives `POST /specs` (for capabilities) and `POST /context` (for live state) from the browser plugin, and serves them to the AI client over standard MCP `stdio`.
+3. **Frontend Bridge (`packages/drawio-mcp-plugin/src/openclaw-bridge.ts`)**: Initializes the `McpBridgeClient` inside Draw.io by implementing three contracts:
+   - **SchemaSupplier**: Maps Draw.io `toolDefinitions` into `ActionDescriptor`s and provides architectural instructions for Gemini.
+   - **StateSupplier**: Listens to `mxGraph` selection events (`window.mxEvent.CHANGE`) and pushes the selected cell's geometry/XML state to the server.
+   - **ActionSupplier**: Acts as the execution engine, receiving tool calls (e.g., `add-rectangle`) from the server and running them locally on `mxGraph`.
+
+When working on the bridge, modify `openclaw-bridge.ts` for frontend event mapping, and test by running `npx tsx mcp-ai-client.ts` alongside serving the compiled plugin (`dist/mcp-plugin.js`) locally.
+
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
 

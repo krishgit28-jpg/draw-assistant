@@ -22,6 +22,10 @@
   "author": "Ladislav Gazo",
   "license": "MIT",
   "devDependencies": {
-    "ts-jest": "29.4.9"
+    "ts-jest": "29.4.9",
+    "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0"
   }
 }

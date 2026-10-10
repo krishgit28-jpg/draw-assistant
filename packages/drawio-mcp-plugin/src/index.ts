@@ -10,3 +10,4 @@ export * from "./settingsDialog";
 export * from "./drawio-tools";
 export * from "./tool-registry";
 export * from "./bootstrap";
+export * from "./predictions-panel";

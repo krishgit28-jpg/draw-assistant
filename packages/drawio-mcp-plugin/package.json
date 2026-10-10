@@ -22,7 +22,8 @@
   "author": "Ladislav Gazo",
   "license": "MIT",
   "dependencies": {
-    "drawio-mcp-compat": "workspace:*"
+    "drawio-mcp-compat": "workspace:*",
+    "@pptist/sdk": "workspace:*"
   },
   "devDependencies": {
     "@jest/globals": "30.2.0",

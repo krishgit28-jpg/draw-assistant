@@ -8,6 +8,7 @@
  */
 
 import { bootstrapPlugin, type Transport } from "./bootstrap";
+import { initOpenClawBridge } from "./openclaw-bridge";
 import {
   createWebSocketManager,
   type WebSocketManager,
@@ -200,6 +201,9 @@ function initPlugin() {
 
         initializeSettingsDialog();
         addMenuItem(ui);
+
+        // Initialize Universal Web-to-MCP Bridge
+        initOpenClawBridge(ui);
 
         console.info("[plugin] MCP Plugin fully initialized");
       });

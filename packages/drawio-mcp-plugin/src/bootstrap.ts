@@ -17,6 +17,11 @@ import { setRuntimeCatalog } from "./shape-library";
 import { extractShapesFromSidebar } from "./shape-extractor";
 import { toolDefinitions } from "./tool-registry";
 import { sendCompatReport } from "./drawio-compat/report.js";
+import {
+  initPredictionsPanel,
+  handlePredictions,
+  disposePredictionsPanel,
+} from "./predictions-panel";
 import type {
   DrawIOFunction,
   DrawioEventListener,
@@ -222,6 +227,14 @@ export function bootstrapPlugin(opts: BootstrapOptions): BootstrapHandle {
       return;
     }
 
+    if (message.__control === "xml-predictions") {
+      const predictions = message.predictions;
+      if (Array.isArray(predictions)) {
+        handlePredictions(ui, predictions);
+      }
+      return;
+    }
+
     const handler =
       typeof message.__event === "string"
         ? toolHandlers.get(message.__event)
@@ -283,10 +296,14 @@ export function bootstrapPlugin(opts: BootstrapOptions): BootstrapHandle {
 
   sendCompatReport(transport.send.bind(transport));
 
+  // Initialize the AI predictions panel UI
+  initPredictionsPanel(ui);
+
   return {
     syncDocumentState,
     dispose: () => {
       detachCurrentFileListener();
+      disposePredictionsPanel();
       cleanups.forEach((fn) => fn());
       cleanups.length = 0;
     },
