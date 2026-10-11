@@ -1,12 +1,12 @@
-import { 
-  McpBridgeClient, 
-  type ActionSupplier, 
-  type SchemaSupplier, 
+import {
+  McpBridgeClient,
+  type ActionSupplier,
+  type SchemaSupplier,
   type StateSupplier,
   type Unsubscribe,
-  type ClientSpecs, 
-  type CanvasState, 
-  type CanvasElement 
+  type ClientSpecs,
+  type CanvasState,
+  type CanvasElement
 } from "@pptist/sdk";
 import type { DrawioUI } from "./types";
 import { toolDefinitions } from "./tool-registry";
@@ -96,7 +96,7 @@ Architecture Instructions:
       // Hook mxGraph model and selection changes if available
       const graph = ui.editor?.graph;
       let mxEvent = (window as any).mxEvent;
-      
+
       const onGraphChange = () => triggerListener("graph:change");
 
       if (graph && mxEvent) {
@@ -151,8 +151,8 @@ Architecture Instructions:
                 const def = toolDefinitions.find((d) => d.name === step.command);
                 if (def) {
                   try {
-                    const args = { 
-                      ...(step.args || {}), 
+                    const args = {
+                      ...(step.args || {}),
                       target_document: { id: get_active_document_id() },
                       target_page: { id: get_page_id((ui as any).currentPage) }
                     };
@@ -167,10 +167,10 @@ Architecture Instructions:
             }
           }
         }));
-        
+
         // Pass to the predictions panel
         if (mapped.length > 0) {
-           handlePredictions(ui, mapped);
+          handlePredictions(ui, mapped);
         }
       }
     } catch (e) {
@@ -189,22 +189,50 @@ function buildSnapshot(ui: DrawioUI, trigger: string): CanvasState {
     // Ignore error if selection fails
   }
 
-  const selection: CanvasElement[] = [];
+  const serializeCell = (cell: any): CanvasElement => {
+    const geometry = cell.geometry || {};
+    
+    // Extract Draw.io specific topology data for the analyzer
+    const details = {
+      isEdge: !!cell.edge,
+      source_id: cell.source?.id || null,
+      target_id: cell.target?.id || null,
+      parent_id: cell.parent?.id || null,
+      value: cell.value,
+    };
 
-  if (selected && selected !== "no cell selected") {
-    // Extract XML/JSON representation as requested
-    const geometry = selected.geometry || {};
-    selection.push({
-      id: selected.id || "unknown",
-      type: typeof selected.value === "object" ? selected.value?.nodeName || "object" : "text",
+    return {
+      id: cell.id || "unknown",
+      type: cell.edge ? "edge" : (typeof cell.value === "object" ? cell.value?.nodeName || "object" : "vertex"),
       left: geometry.x || 0,
       top: geometry.y || 0,
       width: geometry.width || 0,
       height: geometry.height || 0,
-      content: JSON.stringify(remove_circular_dependencies(selected)),
-    });
+      content: JSON.stringify(details),
+    };
+  };
+
+  const selection: CanvasElement[] = [];
+  if (selected && selected !== "no cell selected") {
+    selection.push(serializeCell(selected));
   }
-  
+
+  const allElements: CanvasElement[] = [];
+  try {
+    const model = (ui as any).editor?.graph?.getModel();
+    if (model && model.cells) {
+      for (const id in model.cells) {
+        const cell = model.cells[id];
+        // Exclude root (0) and default layer (1)
+        if (cell.id !== "0" && cell.id !== "1") {
+          allElements.push(serializeCell(cell));
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore
+  }
+
   let documentInfo = null;
   try {
     const file = ui.getCurrentFile?.();
@@ -220,7 +248,7 @@ function buildSnapshot(ui: DrawioUI, trigger: string): CanvasState {
     selection,
     slide: {
       id: documentInfo?.current_page?.id || "unknown-page",
-      elements: selection, // For now just passing selection as elements
+      elements: allElements.length > 0 ? allElements : selection,
     },
     history: [],
   };

@@ -4034,18 +4034,41 @@ Architecture Instructions:
       selected = get_selected_cell(ui2);
     } catch (e) {
     }
-    const selection = [];
-    if (selected && selected !== "no cell selected") {
-      const geometry = selected.geometry || {};
-      selection.push({
-        id: selected.id || "unknown",
-        type: typeof selected.value === "object" ? selected.value?.nodeName || "object" : "text",
+    const serializeCell = (cell) => {
+      const geometry = cell.geometry || {};
+      const details = {
+        isEdge: !!cell.edge,
+        source_id: cell.source?.id || null,
+        target_id: cell.target?.id || null,
+        parent_id: cell.parent?.id || null,
+        value: cell.value
+      };
+      return {
+        id: cell.id || "unknown",
+        type: cell.edge ? "edge" : typeof cell.value === "object" ? cell.value?.nodeName || "object" : "vertex",
         left: geometry.x || 0,
         top: geometry.y || 0,
         width: geometry.width || 0,
         height: geometry.height || 0,
-        content: JSON.stringify(remove_circular_dependencies(selected))
-      });
+        content: JSON.stringify(details)
+      };
+    };
+    const selection = [];
+    if (selected && selected !== "no cell selected") {
+      selection.push(serializeCell(selected));
+    }
+    const allElements = [];
+    try {
+      const model = ui2.editor?.graph?.getModel();
+      if (model && model.cells) {
+        for (const id in model.cells) {
+          const cell = model.cells[id];
+          if (cell.id !== "0" && cell.id !== "1") {
+            allElements.push(serializeCell(cell));
+          }
+        }
+      }
+    } catch (e) {
     }
     let documentInfo = null;
     try {
@@ -4060,8 +4083,7 @@ Architecture Instructions:
       selection,
       slide: {
         id: documentInfo?.current_page?.id || "unknown-page",
-        elements: selection
-        // For now just passing selection as elements
+        elements: allElements.length > 0 ? allElements : selection
       },
       history: []
     };

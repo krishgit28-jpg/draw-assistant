@@ -8,9 +8,8 @@
 
 import type { AnalyzerResult, ContextAnalyzer, ContextInsights } from './analyzerTypes.js'
 import type { MCPPayload } from './types.js'
-import { AlignmentAnalyzer } from './analyzerModules/alignment.js'
-import { ContrastAnalyzer } from './analyzerModules/contrast.js'
-import { FontConsistencyAnalyzer } from './analyzerModules/fontConsistency.js'
+import { DrawioAlignmentAnalyzer } from './analyzerModules/drawioAlignment.js'
+import { DrawioTopologyAnalyzer } from './analyzerModules/drawioTopology.js'
 import { MlLayoutAnalyzer } from './analyzerModules/mlLayout.js'
 
 export type { AnalyzerResult, ContextAnalyzer, ContextInsights, MlInsights } from './analyzerTypes.js'
@@ -64,9 +63,8 @@ function mergeResults(results: AnalyzerResult[]): ContextInsights {
 /** Heuristic analyzers + the ML layout analyzer. */
 export function createDefaultPipeline(): AnalyzerPipeline {
   return new AnalyzerPipeline([
-    new AlignmentAnalyzer(),
-    new ContrastAnalyzer(),
-    new FontConsistencyAnalyzer(),
+    new DrawioAlignmentAnalyzer(),
+    new DrawioTopologyAnalyzer(),
     new MlLayoutAnalyzer(),
   ])
 }
