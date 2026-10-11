@@ -187,3 +187,4 @@ See [DESKTOP.md](./DESKTOP.md) for the full setup steps and the current limitati
 ## Assessments
 
 [![MSeeP.ai Security Assessment Badge](https://mseep.net/pr/lgazo-drawio-mcp-server-badge.png)](https://mseep.ai/app/lgazo-drawio-mcp-server)
+# draw-assistant
